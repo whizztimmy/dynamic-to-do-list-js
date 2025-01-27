@@ -4,39 +4,56 @@ document.addEventListener('DOMContentLoaded', () => {
     const taskInput = document.getElementById('task-input');
     const taskList = document.getElementById('task-list');
 
-    // Function to add a new task
-    function addTask() {
-        const taskText = taskInput.value.trim(); // Get and trim input value
+    // Load tasks from Local Storage
+    function loadTasks() {
+        const storedTasks = JSON.parse(localStorage.getItem('tasks') || '[]');
+        storedTasks.forEach(taskText => addTask(taskText, false)); // Don't save again while loading
+    }
 
+    // Function to save tasks to Local Storage
+    function saveTasks() {
+        const tasks = Array.from(taskList.children).map(li => li.firstChild.textContent);
+        localStorage.setItem('tasks', JSON.stringify(tasks));
+    }
+
+    // Function to add a new task
+    function addTask(taskText = taskInput.value.trim(), save = true) {
         if (taskText === '') {
-            alert('Please enter a task.'); // Prevent adding empty tasks
+            alert('Please enter a task.');
             return;
         }
 
         // Create a new list item
         const li = document.createElement('li');
         li.textContent = taskText;
+        li.classList.add('task-item'); // Using classList.add to comply with the requirement
 
         // Create a remove button
         const removeBtn = document.createElement('button');
         removeBtn.textContent = 'Remove';
-        removeBtn.className = 'remove-btn';
+        removeBtn.classList.add('remove-btn'); // Explicitly using classList.add
 
         // Remove task when button is clicked
-        removeBtn.addEventListener('click', () => {
+        removeBtn.addEventListener('click', function () {
             taskList.removeChild(li);
+            saveTasks(); // Update Local Storage after removal
         });
 
         // Append elements
         li.appendChild(removeBtn);
         taskList.appendChild(li);
 
+        // Save to Local Storage if needed
+        if (save) {
+            saveTasks();
+        }
+
         // Clear input field
         taskInput.value = '';
     }
 
     // Event listener for button click
-    addButton.addEventListener('click', addTask);
+    addButton.addEventListener('click', () => addTask());
 
     // Event listener for 'Enter' key press
     taskInput.addEventListener('keypress', (event) => {
@@ -44,4 +61,7 @@ document.addEventListener('DOMContentLoaded', () => {
             addTask();
         }
     });
+
+    // Load existing tasks when the page loads
+    loadTasks();
 });
